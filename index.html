@@ -1,1 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reconocimiento de Figuras - Grafo con BFS/DFS</title>
+    <!-- PyScript CSS y JS -->
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f9; color: #333; }
+        h1 { color: #2c3e50; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        pre { background: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        button { background: #3498db; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #2980b9; }
+        #output { font-weight: bold; margin-top: 10px; white-space: pre-line; }
+    </style>
+</head>
+<body>
 
+    <div class="card">
+        <h1>Reconocimiento de Figuras en Grafo</h1>
+        <p>Este sistema modela 6 figuras geométricas representadas en un grafo según sus características (número de aristas) y realiza una búsqueda ciega (BFS y DFS) para identificarlas.</p>
+        <button py-click="ejecutar_busqueda">Ejecutar Búsqueda BFS y DFS</button>
+        <div id="output">Haz clic en el botón para iniciar la simulación...</div>
+    </div>
+
+    <div class="card">
+        <h3>Código Python embebido:</h3>
+        <pre><code>
+# Estructura del Grafo de 6 Figuras
+grafo = {
+    'Triángulo': {'aristas': 3, 'vecinos': ['Cuadrado', 'Pentágono']},
+    'Cuadrado': {'aristas': 4, 'vecinos': ['Triángulo', 'Hexágono']},
+    'Pentágono': {'aristas': 5, 'vecinos': ['Triángulo', 'Hexágono']},
+    'Hexágono': {'aristas': 6, 'vecinos': ['Cuadrado', 'Pentágono', 'Heptágono']},
+    'Heptágono': {'aristas': 7, 'vecinos': ['Hexágono', 'Octágono']},
+    'Octágono': {'aristas': 8, 'vecinos': ['Heptágono']}
+}
+        </code></pre>
+    </div>
+
+    <!-- Script de Python ejecutado en el navegador -->
+    <script type="py">
+        from pyscript import display
+        from collections import deque
+
+        # Grafo representativo de 6 figuras con sus características (aristas)
+        grafo = {
+            'Triángulo (3 aristas)': {'aristas': 3, 'vecinos': ['Cuadrado (4 aristas)', 'Pentágono (5 aristas)']},
+            'Cuadrado (4 aristas)': {'aristas': 4, 'vecinos': ['Triángulo (3 aristas)', 'Hexágono (6 aristas)']},
+            'Pentágono (5 aristas)': {'aristas': 5, 'vecinos': ['Triángulo (3 aristas)', 'Hexágono (6 aristas)']},
+            'Hexágono (6 aristas)': {'aristas': 6, 'vecinos': ['Cuadrado (4 aristas)', 'Pentágono (5 aristas)', 'Heptágono (7 aristas)']},
+            'Heptágono (7 aristas)': {'aristas': 7, 'vecinos': ['Hexágono (6 aristas)', 'Octágono (8 aristas)']},
+            'Octágono (8 aristas)': {'aristas': 8, 'vecinos': ['Heptágono (7 aristas)']}
+        }
+
+        def bfs(inicio, objetivo_aristas):
+            visitados = set()
+            cola = deque([[inicio]])
+            
+            while cola:
+                camino = cola.popleft()
+                nodo = camino[-1]
+                
+                if nodo not in visitados:
+                    visitados.add(nodo)
+                    
+                    # Criterio de reconocimiento basado en características (aristas)
+                    if grafo[nodo]['aristas'] == objetivo_aristas:
+                        return camino
+                        
+                    for vecino in grafo[nodo]['vecinos']:
+                        nuevo_camino = list(camino)
+                        nuevo_camino.append(vecino)
+                        cola.append(nuevo_camino)
+            return None
+
+        def dfs(inicio, objetivo_aristas, visitados=None, camino=None):
+            if visitados is None:
+                visitados = set()
+            if camino is None:
+                camino = [inicio]
+                
+            visitados.add(inicio)
+            
+            if grafo[inicio]['aristas'] == objetivo_aristas:
+                return camino
+                
+            for vecino in grafo[inicio]['vecinos']:
+                if vecino not in visitados:
+                    resultado = dfs(vecino, objetivo_aristas, visitados, camino + [vecino])
+                    if resultado:
+                        return resultado
+            return None
+
+        def ejecutar_busqueda(event):
+            inicio = 'Triángulo (3 aristas)'
+            objetivo = 6  # Buscamos la figura que tenga 6 aristas (Hexágono)
+            
+            camino_bfs = bfs(inicio, objetivo)
+            camino_dfs = dfs(inicio, objetivo)
+            
+            resultado_texto = f"--- RESULTADOS DE BÚSQUEDA (Objetivo: {objetivo} aristas) ---\n\n"
+            resultado_texto += f"BFS Ruta encontrada: {' -> '.join(camino_bfs) if camino_bfs else 'No encontrado'}\n"
+            resultado_texto += f"DFS Ruta encontrada: {' -> '.join(camino_dfs) if camino_dfs else 'No encontrado'}\n"
+            
+            output_div = document.querySelector("#output")
+            output_div.innerText = resultado_texto
+    </script>
+
+</body>
+</html>
